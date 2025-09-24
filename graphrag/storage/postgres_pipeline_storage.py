@@ -553,7 +553,7 @@ class PostgresPipelineStorage(PipelineStorage):
             conn = await self._get_connection()
             try:
                 result = await conn.execute(
-                    f"DELETE FROM {table_name}"
+                   f"TRUNCATE TABLE {table_name}"
                 )
                 log.info(f"Deleted record for key {key}: {result}")
                 

@@ -34,14 +34,14 @@ classifiers = [
 dependencies = [
     "environs>=11.0.0",
     # Vector Stores
-    "azure-search-documents>=11.5.2",
+    #"azure-search-documents>=11.5.2",
     "lancedb>=0.17.0",
     # Async IO
     "aiofiles>=24.1.0",
     # LLM
-    "fnllm[azure,openai]>=0.4.1",
+    #"fnllm[azure,openai]>=0.4.1",
     "json-repair>=0.30.3",
-    "openai>=1.68.0",
+    #"openai>=1.68.0",
     "nltk==3.9.1",
     "tiktoken>=0.11.0",
     # Data-Science
@@ -58,15 +58,15 @@ dependencies = [
     "devtools>=0.12.2",
     "typing-extensions>=4.12.2",
     # Azure
-    "azure-cosmos>=4.9.0",
-    "azure-identity>=1.19.0",
-    "azure-storage-blob>=12.24.0",
+    #"azure-cosmos>=4.9.0",
+    #"azure-identity>=1.19.0",
+    #"azure-storage-blob>=12.24.0",
     "future>=1.0.0", # Needed until graspologic fixes their dependency
     "typer>=0.16.0",
     "tqdm>=4.67.1",
     "textblob>=0.18.0.post0",
     "spacy>=3.8.4",
-    "litellm>=1.77.1",
+    #"litellm>=1.77.1",
 ]
 
 [project.optional-dependencies]

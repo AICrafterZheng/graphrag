@@ -7,7 +7,7 @@ from itertools import combinations
 
 import numpy as np
 import pandas as pd
-
+import logging
 from graphrag.cache.noop_pipeline_cache import NoopPipelineCache
 from graphrag.cache.pipeline_cache import PipelineCache
 from graphrag.config.enums import AsyncType
@@ -18,6 +18,7 @@ from graphrag.index.utils.derive_from_rows import derive_from_rows
 from graphrag.index.utils.graphs import calculate_pmi_edge_weights
 from graphrag.index.utils.hashing import gen_sha512_hash
 
+logger = logging.getLogger(__name__)
 
 async def build_noun_graph(
     text_unit_df: pd.DataFrame,
@@ -65,13 +66,12 @@ async def _extract_nodes(
             result = text_analyzer.extract(text)
             await cache.set(key, result)
         return result
-
+    logger.info(f"Extracting noun phrases from {text_unit_df.shape[0]} text units")
     text_unit_df["noun_phrases"] = await derive_from_rows(
         text_unit_df,
         extract,
         num_threads=num_threads,
         async_type=async_mode,
-        progress_msg="extract noun phrases progress: ",
     )
 
     noun_node_df = text_unit_df.explode("noun_phrases")

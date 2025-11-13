@@ -17,11 +17,13 @@ from graphrag.index.operations.cluster_graph import cluster_graph
 from graphrag.index.operations.create_graph import create_graph
 from graphrag.index.typing.context import PipelineRunContext
 from graphrag.index.typing.workflow import WorkflowFunctionOutput
+from graphrag.telemetry.decorators import trace_workflow
 from graphrag.utils.storage import load_table_from_storage, write_table_to_storage
 
 logger = logging.getLogger(__name__)
 
 
+@trace_workflow("create_communities")
 async def run_workflow(
     config: GraphRagConfig,
     context: PipelineRunContext,
@@ -125,7 +127,11 @@ def create_communities(
 
     # join it all up and add some new fields
     final_communities = all_grouped.merge(entity_ids, on="community", how="inner")
-    final_communities["id"] = [str(uuid4()) for _ in range(len(final_communities))]
+
+    # Generate id if there is no id
+    if "id" not in final_communities.columns or final_communities["id"].isna().all():
+        final_communities["id"] = [str(uuid4()) for _ in range(len(final_communities))]
+
     final_communities["human_readable_id"] = final_communities["community"]
     final_communities["title"] = "Community " + final_communities["community"].astype(
         str

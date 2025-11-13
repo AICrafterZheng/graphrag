@@ -7,7 +7,7 @@ from itertools import combinations
 
 import numpy as np
 import pandas as pd
-
+import logging
 from graphrag.cache.noop_pipeline_cache import NoopPipelineCache
 from graphrag.cache.pipeline_cache import PipelineCache
 from graphrag.config.enums import AsyncType
@@ -18,18 +18,24 @@ from graphrag.index.utils.derive_from_rows import derive_from_rows
 from graphrag.index.utils.graphs import calculate_pmi_edge_weights
 from graphrag.index.utils.hashing import gen_sha512_hash
 
+logger = logging.getLogger(__name__)
 
 async def build_noun_graph(
     text_unit_df: pd.DataFrame,
     text_analyzer: BaseNounPhraseExtractor,
     normalize_edge_weights: bool,
     num_threads: int = 4,
+    async_mode: AsyncType = AsyncType.Threaded,
     cache: PipelineCache | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Build a noun graph from text units."""
     text_units = text_unit_df.loc[:, ["id", "text"]]
     nodes_df = await _extract_nodes(
-        text_units, text_analyzer, num_threads=num_threads, cache=cache
+        text_units,
+        text_analyzer,
+        num_threads=num_threads,
+        async_mode=async_mode,
+        cache=cache,
     )
     edges_df = _extract_edges(nodes_df, normalize_edge_weights=normalize_edge_weights)
     return (nodes_df, edges_df)
@@ -39,6 +45,7 @@ async def _extract_nodes(
     text_unit_df: pd.DataFrame,
     text_analyzer: BaseNounPhraseExtractor,
     num_threads: int = 4,
+    async_mode: AsyncType = AsyncType.Threaded,
     cache: PipelineCache | None = None,
 ) -> pd.DataFrame:
     """
@@ -59,13 +66,12 @@ async def _extract_nodes(
             result = text_analyzer.extract(text)
             await cache.set(key, result)
         return result
-
+    logger.info(f"Extracting noun phrases from {text_unit_df.shape[0]} text units")
     text_unit_df["noun_phrases"] = await derive_from_rows(
         text_unit_df,
         extract,
         num_threads=num_threads,
-        async_type=AsyncType.Threaded,
-        progress_msg="extract noun phrases progress: ",
+        async_type=async_mode,
     )
 
     noun_node_df = text_unit_df.explode("noun_phrases")
